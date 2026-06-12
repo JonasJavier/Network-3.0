@@ -1,0 +1,453 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+<!-- Main Post Creation Section -->
+<section>
+  <div class="col-lg-15">
+    <div id="post-modal-data" class="card">
+      <div class="card-header d-flex justify-content-between">
+        <div class="header-title">
+          <h4 class="card-title">Create Post</h4>
+        </div>
+      </div>
+
+      <!-- Check if the user is authenticated to show the post creation form -->
+      {% if user.is_authenticated %}
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <!-- Display user profile image or default image if not available -->
+          <div class="user-img">
+            {% if user.background_image %}
+              <img src="{{ user.background_image.url }}" class="rounded-circle avatar-60" alt="User Background Image">
+            {% else %}
+              <img src="{% static 'network/photos/Downpic.cc-1095249842.jpg' %}" class="rounded-circle avatar-60" alt="User Background Image">
+            {% endif %}
+          </div>
+
+          <!-- Post content input form -->
+          <form action="{% url 'new_post' %}" enctype="multipart/form-data" method="post" class="post-text ms-3 w-100">
+            {% csrf_token %}
+            <input type="text" id="post-content" name="content" class="form-control rounded" placeholder="What's on your mind?" style="border:none;">
+        </div>
+        <hr>
+
+        <!-- Post options: photo, tag friends, or add a feeling -->
+        <ul class="post-opt-block d-flex list-inline m-0 p-0 flex-wrap">
+          <button type="button" class="bg-soft-primary rounded p-2 pointer d-flex align-items-center me-3 mb-md-0 mb-2" data-bs-toggle="modal" data-bs-target="#exampleModal" style="border: none;">
+            <img src="{% static 'network/photos/07.png' %}" alt="icon" class="img-fluid me-2"> Photo/Video
+          </button>
+          <li class="bg-soft-primary rounded p-2 pointer d-flex align-items-center me-3 mb-md-0 mb-2" style="border: none;">
+            <img src="{% static 'network/photos/08.png' %}" alt="icon" class="img-fluid me-2"> Tag Friend
+          </li>
+          <li class="bg-soft-primary rounded p-2 pointer d-flex align-items-center me-3" style="border: none;">
+            <img src="{% static 'network/photos/09.png' %}" alt="icon" class="img-fluid me-2"> Feeling/Activity
+          </li>
+          <!-- Post submission button -->
+          <button id="submit-post" class="btn btn-primary" style="background-color: #28a745; border-color: #28a745;">
+            <i class="bi bi-arrow-right-circle-fill me-2"></i> Post
+          </button>
+        </ul>
+      </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+<!-- Display any alert messages if present -->
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<!-- Photo/Video Upload Modal -->
+<section>
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Upload Photo/Video</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Form to upload a file -->
+          <form id="post-form" action="{% url 'new_post' %}" enctype="multipart/form-data" method="post">
+            {% csrf_token %}
+            <div class="mb-3 d-flex align-items-center">
+              <!-- Display user profile image in the upload modal -->
+              <div class="user-img">
+                {% if user.background_image %}
+                  <img src="{{ user.background_image.url }}" class="rounded-circle" alt="Profile Image">
+                {% else %}
+                  <img src="{% static 'network/photos/Downpic.cc-1095249842.jpg' %}" class="rounded-circle" alt="Profile Image">
+                {% endif %}
+              </div>
+
+              <!-- Text input for post content in the modal -->
+              <input type="text" id="post-content" name="content" class="form-control" placeholder="Write something here..." value="{{ form.content.value|default:'' }}">
+              {% if form.errors.content %}
+                <span style="color: red;">{{ form.errors.content }}</span>
+              {% endif %}
+            </div>
+
+            <!-- Divider line -->
+            <div class="divider"></div>
+            <div class="mb-3">
+              <!-- File input for uploading image or video -->
+              <input type="file" name="image" id="post-image" class="form-control">
+            </div>
+
+            <!-- Button to submit the post in the modal -->
+            <button type="submit" id="submit-post-modal" class="btn btn-primary">Publish</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main content area for posts -->
+<main>
+  <section>
+    {% for post in page_obj %}
+      <div class="card">
+        <div class="card-body">
+          <div class="post-item">
+            <div class="user-post-data pb-3">
+              <div class="d-flex justify-content-between">
+                <div class="me-3">
+
+                  <!-- Display post author's profile image or default image -->
+                  {% if post.author.background_image %}
+                    <img src="{{ post.author.background_image.url }}" class="rounded-circle avatar-60" alt="">
+                  {% else %}
+                    <img src="{% static 'network/photos/Downpic.cc-1095249842.jpg' %}" class="avatar-30 rounded-circle" alt="">
+                  {% endif %}
+
+                </div>
+
+                <!-- Display post author, timestamp, and other details -->
+                <div class="w-100">
+                  <div class="d-flex justify-content-between flex-wrap">
+                    <div>
+                      {% if post.author.id == request.user.id %}
+                        <h5 class="mb-0 d-inline-block"><a href="{% url 'profile' %}">{{ post.author.username }}</a></h5>
+                      {% else %}
+                        <h5 class="mb-0 d-inline-block"><a href="{% url 'user_page' post.author.id %}">{{ post.author.username }}</a></h5>
+                      {% endif %}
+                      <p class="ms-1 mb-0 d-inline-block">Add New Post</p>
+                      <p class="mb-0">{{ post.created_at }}</p>
+                    </div>
+
+                    <!-- Dropdown for post actions (Edit/Delete) -->
+                    <div class="card-post-toolbar">
+                      <div class="dropdown">
+                        <span class="dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button">
+                          <i class="ri-more-fill"></i>
+                        </span>
+                        <div class="dropdown-menu m-0 p-0">
+                          <!-- Only show the delete button if the user is the author of the post -->
+                          {% if post.author == user %}
+                            <a class="dropdown-item p-3" href="{% url 'delete_post' post.id %}" onclick="return confirm('Are you sure you want to delete this post?');">
+                              <div class="d-flex align-items-top">
+                                <i class="ri-delete-bin-7-line h4"></i>
+                                <div class="data ms-2">
+                                  <h6>Delete</h6>
+                                  <p class="mb-0">Remove this Post from Timeline</p>
+                                </div>
+                              </div>
+                            </a>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+    
+            <!-- Optional Post Image Section: Display image if the post has one -->
+{% if post.image %}
+<div class="user-post">
+    <a href="#">
+        <img src="{{ post.image.url }}" alt="post-image" id="postimage" class="img-fluid w-100" />
+    </a>
+</div>
+{% endif %}
+
+<!-- Post Content -->
+<p class="card-text" id="post-content-{{ post.id }}">{{ post.content }}</p>
+
+<!-- Comment Area -->
+<ul class="post-comments p-0 m-0">
+    <!-- Like and Comment Buttons Area -->
+    <li>
+        <div class="comment-area mt-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div class="like-block position-relative d-flex align-items-center">
+                    <div class="d-flex align-items-center">
+                        <!-- Edit Button: Only visible to post author -->
+                        {% if user.is_authenticated and user == post.author %}
+                        <a href="{% url 'edit_post' post.id %}" class="btn btn-warning btn-sm">Edit</a>
+                        {% endif %}
+                        <!-- Like/Unlike Buttons -->
+                        <button class="like-btn btn btn-primary btn-sm" id="like" data-post-id="{{ post.id }}">Like</button>
+                        <button class="unlike-btn btn btn-danger btn-sm" id="unlike" data-post-id="{{ post.id }}">Unlike</button>
+                        <!-- Total Likes Count -->
+                        <div class="total-like-block ms-2 me-3">
+                            <div class="likes-count">{{ post.likes.count }} Likes</div>
+                        </div>
+                    </div>
+                    <!-- Total Comments Count -->
+                    <div class="total-comment-block">
+                        <span class="comment">{{ post.comments.count }} Comment</span>
+                    </div>
+                </div>
+                <!-- Share Button -->
+                <div class="share-block d-flex align-items-center feather-icon mt-2 mt-md-0">
+                    <a href="#" data-bs-toggle="offcanvas" data-bs-target="#share-btn" aria-controls="share-btn">
+                        <i class="ri-share-line"></i>
+                        <span class="ms-1">{{ post.shares.count }} Share</span>
+                    </a>
+                </div>
+            </div>
+            <hr>
+        </div>
+    </li>
+</ul>
+
+<!-- Post Comments Section -->
+<ul class="post-comments list-unstyled">
+    <!-- Display all comments in a post -->
+    {% if post.comments.all %}
+    <div class="post-comments-container my-3">
+        {% for comment in post.comments.all %}
+        <div class="comment-item border-bottom py-2">
+            <div class="d-flex align-items-start">
+                <!-- Profile Image of Comment Author -->
+                <div class="user-img">
+                    {% if comment.author.background_image %}
+                    <img src="{{ comment.author.background_image.url }}" class="avatar-30 rounded-circle" alt="User Image">
+                    {% else %}
+                    <img src="{% static 'network/photos/Downpic.cc-1095249842.jpg' %}" class="avatar-30 rounded-circle" alt="User Image">
+                    {% endif %}
+                </div>
+                <!-- Comment Content -->
+                <div class="comment-content ms-3 flex-grow-1">
+                    <h6 class="mb-1">
+                        <a href="{% url 'user_page' comment.author.id %}" class="text-decoration-none">{{ comment.author.username }}</a>
+                    </h6>
+                    <p class="mb-1">{{ comment.content }}</p>
+                    <small class="text-muted">{{ comment.created_at }}</small>
+                    <!-- Comment Actions: Like and Reply -->
+                    <div class="d-flex mt-1">
+                        <button class="btn btn-link p-0 me-3 like-comment-btn" data-comment-id="{{ comment.id }}">
+                            👍 Like <span class="comment-likes-count">{{ comment.likes.count }}</span>
+                        </button>
+                        <button class="btn btn-link p-0">💬 Reply</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</ul>
+
+<!-- Comment Form -->
+<form method="post" class="comment-text d-flex align-items-center mt-3" action="{% url 'add_comment' post.id %}">
+    {% csrf_token %}
+    {{ comment_form.content }}
+    <button type="submit" class="btn btn-primary">Comment</button>
+</form>
+
+</div>
+</div>
+</div>
+{% empty %}
+<p>No posts yet.</p>
+{% endfor %}
+</section>
+
+<!-- Share Offcanvas -->
+<div class="offcanvas offcanvas-bottom share-offcanvas" tabindex="-1" id="share-btn" aria-labelledby="shareBottomLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="shareBottomLabel">Share</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body small">
+        <!-- Social Media Sharing Options -->
+        <div class="d-flex flex-wrap align-items-center">
+            <div class="text-center me-3 mb-3">
+                <img src="{% static 'network/icons/08.png' %}" class="img-fluid rounded mb-2" alt="Facebook Icon">
+                <h6>Facebook</h6>
+            </div>
+            <div class="text-center me-3 mb-3">
+                <img src="{% static 'network/icons/09.png'%}" class="img-fluid rounded mb-2" alt="Twitter Icon">
+                <h6>Twitter</h6>
+            </div>
+            <div class="text-center me-3 mb-3">
+                <img src="{% static 'network/icons/10.png' %}" class="img-fluid rounded mb-2" alt="Instagram Icon">
+                <h6>Instagram</h6>
+            </div>
+            <div class="text-center me-3 mb-3">
+                <img src="{% static 'network/icons/11.png' %}" class="img-fluid rounded mb-2" alt="Google Plus Icon">
+                <h6>Google Plus</h6>
+            </div>
+            <div class="text-center me-3 mb-3">
+                <img src="{% static 'network/icons/12.png' %}" class="img-fluid rounded mb-2" alt="LinkedIn Icon">
+                <h6>In</h6>
+            </div>
+            <div class="text-center me-3 mb-3">
+                <img src="{% static 'network/icons/13.png' %}" class="img-fluid rounded mb-2" alt="YouTube Icon">
+                <h6>YouTube</h6>
+            </div>
+        </div>
+    </div>
+</div>
+</main>
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+          
+            <li class="page-item disabled"><a class="page-link" href="#">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</a></li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+   
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Funcionalidad de "like" en publicaciones
+        document.querySelectorAll('.like-btn').forEach(button => {
+          button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const postId = button.getAttribute('data-post-id');
+            const likesCountElement = button.closest('.like-block').querySelector('.likes-count');
+            let likesCount = parseInt(likesCountElement.innerText);
+    
+            fetch(`/post/${postId}/like/`, {
+              method: 'GET',
+              headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            })
+            .then(response => {
+              if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+              return response.json();
+            })
+            .then(data => {
+              if (data.liked) {
+                console.log(data.message);
+                button.classList.add('btn-success');
+                button.classList.remove('btn-primary');
+                likesCountElement.innerText = `${likesCount + 1} Likes`;
+              }
+            })
+            .catch(error => console.error('Error en el "like" de la publicación:', error));
+          });
+        });
+    
+        // Funcionalidad de "unlike" en publicaciones
+        document.querySelectorAll('.unlike-btn').forEach(button => {
+          button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const postId = button.getAttribute('data-post-id');
+            const likesCountElement = button.closest('.like-block').querySelector('.likes-count');
+            let likesCount = parseInt(likesCountElement.innerText);
+    
+            fetch(`/post/${postId}/unlike/`, {
+              method: 'GET',
+              headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            })
+            .then(response => {
+              if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+              return response.json();
+            })
+            .then(data => {
+              if (!data.liked) {
+                console.log(data.message);
+                button.classList.add('btn-secondary');
+                button.classList.remove('btn-danger');
+                likesCountElement.innerText = `${likesCount - 1} Likes`;
+              }
+            })
+            .catch(error => console.error('Error en el "unlike" de la publicación:', error));
+          });
+        });
+    
+        // Funcionalidad de "like" en comentarios
+        document.querySelectorAll('.like-comment-btn').forEach(button => {
+          button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const commentId = button.getAttribute('data-comment-id');
+            const commentLikesCountElement = button.querySelector('.comment-likes-count');
+            let commentLikesCount = parseInt(commentLikesCountElement.innerText);
+    
+            fetch(`/like_comment/${commentId}/`, {
+              method: 'GET',
+              headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            })
+            .then(response => {
+              if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+              return response.json();
+            })
+            .then(data => {
+              // Actualiza el contador de likes en el frontend
+              if (data.liked) {
+                console.log("Comment liked successfully.");
+                commentLikesCountElement.innerText = commentLikesCount + 1;
+              } else {
+                console.log("Comment unliked.");
+                commentLikesCountElement.innerText = commentLikesCount - 1;
+              }
+            })
+            .catch(error => console.error('Error en el "like" del comentario:', error));
+          });
+        });
+      });
+
+      document.addEventListener('DOMContentLoaded', function () {
+        // Selecciona todos los botones de "like" de comentarios
+        const likeCommentButtons = document.querySelectorAll('.like-comment-btn');
+    
+        likeCommentButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const commentId = this.getAttribute('data-comment-id');
+                const url = `/like/comment/${commentId}/`;
+                const likesCountSpan = this.querySelector('.comment-likes-count');
+    
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',  // Usa CSRF token
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.liked) {
+                        this.innerHTML = `👍 Like <span class="comment-likes-count">${data.likes_count}</span>`;
+                    } else {
+                        this.innerHTML = `👍 Like <span class="comment-likes-count">${data.likes_count}</span>`;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    });
+    </script>
+
+
+{% endblock %}
+

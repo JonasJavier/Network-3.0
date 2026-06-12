@@ -1,0 +1,71 @@
+body, html {
+    height: 100%;
+    background-color: #121212; /* Dark background for the body */
+    color: #ffffff; /* White text color for better readability in dark mode */
+}
+
+.card {
+    background-color: #1f1f1f; /* Slightly lighter dark shade for the card */
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5); /* Darker shadow for contrast */
+}
+
+.logo {
+    width: 100px; /* Adjust size as needed */
+    margin-bottom: 20px;
+}
+
+.form-control {
+    border-radius: 20px;
+    margin-bottom: 15px;
+    background-color: #262626; /* Dark grey, for slight contrast against card */
+    color: white; /* White text */
+    border: 1px solid #393939; /* Slightly lighter border for subtle effect */
+    padding: 10px; /* Padding for better spacing */
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: #b1b1b1; /* Light grey placeholder text for contrast */
+    opacity: 1; /* Placeholder text should not be semi-transparent */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+    color: #b1b1b1;
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+    color: #b1b1b1;
+}
+
+.btn-primary {
+    border-radius: 20px;
+    background-color: #1a73e8; /* Consider using your brand's primary color */
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #135ba1; /* Darker shade on hover for button */
+}
+
+.alert-warning {
+    border-radius: 20px;
+    background-color: #2a2a2a; /* Dark background for alert */
+    color: #ffffff; /* White text for alert */
+    border: 1px solid #474747; /* Dark border for alert */
+}
+
+h3, p, .p2 a {
+    color: #ffffff; /* White text for headings and paragraphs */
+}
+
+.p2 a:hover {
+    color: #bbbbbb; /* Lighter grey for link hover effect */
+}
+
+/* You can add this to remove the blue glow from inputs on focus */
+.form-control:focus {
+    box-shadow: none;
+    border: 1px solid #757575; /* Change the border color on focus if desired */
+}
+
